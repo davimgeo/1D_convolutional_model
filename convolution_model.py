@@ -7,7 +7,6 @@ __author__ = "Davi Mendes"
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 class Model1D:
 
     def __init__(self, Nz: int, vp_interfaces: list, rho_interfaces: list, interfaces: list) -> None:
