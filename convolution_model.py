@@ -81,10 +81,6 @@ class OrmsbyWavelet:
         return [arg1, arg2, arg3, arg4]
 
 
-class KlauserWavelet:
-    pass
-
-
 class Convolution:
     """
     Convolves a input signal(a wavelet) with a filter(reflectivity function)
@@ -155,7 +151,6 @@ class PlotConvolution:
 
         self.__get_plot_grid()
 
-        plt.gca().invert_yaxis()
         plt.show()
         return self.fig
   
@@ -172,27 +167,29 @@ class PlotLithology:
     Plots a lithological profile
     """
 
-    def __init__(self, lithology_types: list[str], lithology_respective_color: dict) -> None:
+    def __init__(self, lithology_types: list[str], lithology_respective_color: dict, interfaces: list) -> None:
         self.lithology_types = lithology_types
         self.lithology_respective_color = lithology_respective_color
+        self.interfaces = interfaces
 
     def model_plot(self, ax, id: int, func_size: int) -> None:
         self.ax = ax
         for i, layer in enumerate(reversed(self.lithology_types)):
-            try: 
-                ax[id].fill_betweenx([i, i + 1], 0, 1, color=self.lithology_respective_color[layer], label=layer)
-            except:
-                ErrorHandling.wrong_key(self.lithology_respective_color)
+            if i == 0:
+                ax[id].fill_betweenx(np.arange(0, self.interfaces[i]), 0, 1, color=self.lithology_respective_color[layer], label=layer)
+            elif i < len(self.interfaces):
+                ax[id].fill_betweenx(np.arange(self.interfaces[i-1], self.interfaces[i]), 0, 1, color=self.lithology_respective_color[layer], label=layer)
+            else:
+                ax[id].fill_betweenx(np.arange(self.interfaces[-1], func_size), 0, 1, color=self.lithology_respective_color[layer], label=layer)
 
-        self.__model_ticks(id)
+        self.__model_ticks(id, func_size)
         self.__model_legends(id)
         self.__model_labels(id, func_size)
-        ax[id].set_ylim(0, len(self.lithology_types))
         ax[id].set_title("Lithological Profile", fontsize=13)
 
-    def __model_ticks(self, id: int) -> None:
+    def __model_ticks(self, id: int, func_size: int) -> None:
         self.ax[id].set_xticks([])
-        self.ax[id].set_yticks(np.linspace(0, len(self.lithology_types), 6))
+        self.ax[id].set_yticks(np.linspace(0, func_size, 6))
 
     def __model_labels(self, id: int, func_size: int) -> None:
         self.ax[id].set_yticklabels(np.linspace(func_size-1, 0, 6).astype(int))
@@ -266,7 +263,7 @@ ormsby_wavelet = instaced_ormsby_wavelet.set_wavelet()
 acoustic_impedance = [rho_interfaces[i] * vp_interfaces[i] for i in range(len(vp_interfaces))]
 acoustic_impedance_to_plot = AuxFunctions.get_convolution_to_plot(acoustic_impedance, interfaces, Nz)
 reflectivity_function = AuxFunctions.reflection_coefficient(Nz, interfaces, acoustic_impedance)
-convolved_signal = Convolution(reflectivity_function, ormsby_wavelet).get_convolution()
+convolved_signal = Convolution(reflectivity_function, ricker_wavelet).get_convolution()
 
 # Create Model to Plot
 instanced_model = Model1D(Nz, vp_interfaces, rho_interfaces, interfaces)
@@ -282,10 +279,9 @@ lithology_type = {'sandstone': 'yellow', 'dolomite': 'slateblue', 'carbonate': '
 lithology_order = ['sandstone', 'salt', 'carbonate', 'dolomite']
 
 # Create Lithology Model
-instanced_lithology_plot = PlotLithology(lithology_order, lithology_type)
+instanced_lithology_plot = PlotLithology(lithology_order, lithology_type, interfaces)
 
 # Plot Convolutional Model
-instanced_convolutional_plot = PlotConvolution(instanced_model_plot, instanced_lithology_plot, instaced_ormsby_wavelet, \
+instanced_convolutional_plot = PlotConvolution(instanced_model_plot, instanced_lithology_plot, instanced_ricker_wavelet, \
                                                 acoustic_impedance_to_plot, reflectivity_function, convolved_signal)
 convolution_plot = instanced_convolutional_plot.model_plot()
-
