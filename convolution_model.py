@@ -2,10 +2,11 @@
 # Create Date: 13/07/2024 5:30AM
 # ---------------------------------------------------------------------------
 
+__author__ = "Davi Mendes"
+
 import numpy as np
 import matplotlib.pyplot as plt
 
-__author__ = "Davi"
 
 class Model1D:
 
