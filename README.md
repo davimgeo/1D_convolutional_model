@@ -1,6 +1,4 @@
-# 1D Convolutional Model
-
-## Results:
+# Results for Ricker Wavelet and Ormsby Wavelet respectively:
 
 ![model_plot_ricker](https://i.imgur.com/zNBwYxf.png)
 
